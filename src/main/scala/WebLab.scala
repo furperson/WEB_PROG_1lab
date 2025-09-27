@@ -4,6 +4,7 @@ package mainSc
 
 import zio._
 import zio.http._
+import zio.http.codec.PathCodec
 import zio.json._
 
 import java.time.{Duration, LocalDateTime}
@@ -133,8 +134,12 @@ object MainApp extends ZIOAppDefault {
   ) , Body.fromArray(image2))
 
 
+  val pattern2: RoutePattern[String] =
+    Method.GET / "fire" / string("jsn")
 
 
+
+  val jsn: PathCodec[String] = string("jsn")
 
   val routes = Routes(
     Method.GET / "test" ->  testRes.toHandler,
@@ -145,15 +150,10 @@ object MainApp extends ZIOAppDefault {
     },
     Method.GET / "images" / "gol.jpg" -> image1Res.toHandler,
     Method.GET / "images" / "ehh.jpg" -> image2Res.toHandler,
-    Method.POST / "fire" -> handler{ (req: Request)=>{
-
-      val runtime = Runtime.default
-
-      val result: String = Unsafe.unsafe { implicit unsafe =>
-        runtime.unsafe.run(req.body.asString).getOrThrow()
-      }
-
-      val res = result.fromJson[ReqRes] match {
+    Method.GET / "fire" / jsn ->  Handler.fromFunctionHandler[(String, Request)]{case (data: String, request: Request) =>{
+  println(data)
+      val actData = data.replaceAll("%7B","{").replaceAll("%22","\"").replaceAll("%3A",":").replaceAll("%7D","}")
+      val res = actData.fromJson[ReqRes] match {
       case Right(rs) => rs
       case _ => {
         println("ERRRO json")
@@ -170,10 +170,9 @@ object MainApp extends ZIOAppDefault {
 
         val resp = MyRecord(checkInside(res),res.X,res.Y, res.R,formattedOnTime,workDuration.toSeconds )
         AppData+= resp
-        Response.json(resp.toJson.toString)
-
+        Response.json(resp.toJson.toString).toHandler
     }
-}
+    }
   )
 
 

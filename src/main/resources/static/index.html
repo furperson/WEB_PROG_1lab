@@ -357,12 +357,12 @@
         async function createPost(postData) {
             try {
                 console.log(JSON.stringify(postData))
-                const response = await fetch('/fire', {
-                    method: 'POST',
+                console.log(`/fire/${JSON.stringify(postData)}`)
+                const response = await fetch(`/fire/${JSON.stringify(postData)}`, {
+                    method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(postData)
+                    }
                 });
 
                 if (!response.ok) {
