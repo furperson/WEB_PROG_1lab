@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Веб-лабораторная работа №1</title>
+    <style>
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+
+        .container {
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 40, 100, 0.12);
+            background-color: #ffffff;
+            padding: 30px;
+            width: 100%;
+            max-width: 1200px;
+            overflow: hidden;
+        }
+
+
+        #header {
+            font-family: 'Courier New', Courier, monospace;
+            color: #1a2533;
+            font-size: 18px;
+            padding: 20px;
+            background-color: #eaf2f8;
+            border: 1px solid #d0e0ec;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+
+        #main-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 25px 0;
+        }
+
+        #main-table > tbody > tr > td {
+            vertical-align: top;
+        }
+
+
+        #input-table-container {
+            padding: 20px;
+            background: #fcfdff;
+            border-radius: 8px;
+            border: 1px solid #e0e6ec;
+        }
+
+        canvas {
+            border-radius: 8px;
+            border: 1px solid #d1dce5;
+            display: block;
+            margin: 0 auto 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .form-group {
+            width: 100%;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        input[type="text"], select {
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+        .r-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .r-buttons input[type="button"] {
+            padding: 10px 18px;
+            border: 1px solid #007bff;
+            background-color: #ffffff;
+            color: #007bff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .r-buttons input[type="button"].active {
+            background-color: #007bff;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        input[type="submit"] {
+            padding: 12px 25px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            height: 20px;
+            margin-top: 5px;
+        }
+
+
+        #results-container {
+            padding: 20px;
+            background: #fcfdff;
+            border-radius: 8px;
+            border: 1px solid #e0e6ec;
+        }
+
+        #results-container h2 {
+            margin-top: 0;
+            color: #343a40;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #res-table {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #res-table th, #res-table td {
+            padding: 15px 12px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        #res-table thead th {
+            background-color: #007bff;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #0056b3;
+        }
+
+        #res-table tbody tr {
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        #res-table tbody tr:nth-of-type(even) {
+            background-color: #f8f9fa;
+        }
+
+        #res-table tbody tr:hover {
+            background-color: #e9ecef;
+        }
+
+        #res-table tbody td {
+            color: #495057;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <table id="main-table">
+        <tr>
+            <td style="width: 50%;">
+                <div id="input-table-container">
+                    <div id="header">
+                        <div>ФИО: Сыщиков Никита Сергеевич</div>
+                        <div>Группа: P3231</div>
+                        <div>Вариант: 409658</div>
+                    </div>
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="width: 50%; vertical-align: middle;">
+                                <canvas id="graph-canvas" width="300" height="300"></canvas>
+                            </td>
+                            <td style="width: 50%; vertical-align: middle;">
+                                <form id="coordinates-form" method="GET" action="#">
+                                    <div class="form-group">
+                                        <label for="x-select">Изменение X</label>
+                                        <select id="x-select" name="x">
+                                            <option value="-4">-4</option>
+                                            <option value="-3">-3</option>
+                                            <option value="-2">-2</option>
+                                            <option value="-1">-1</option>
+                                            <option value="0" selected>0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="y-text">Изменение Y (-3 ... 5)</label>
+                                        <input type="text" id="y-text" name="y" placeholder="Введите число от -3 до 5">
+                                        <div id="y-error" class="error-message"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Изменение R</label>
+                                        <div class="r-buttons">
+                                            <input type="button" value="1">
+                                            <input type="button" value="2">
+                                            <input type="button" class="active" value="3">
+                                            <input type="button" value="4">
+                                            <input type="button" value="5">
+                                        </div>
+                                        <input type="hidden" id="r-hidden" name="r" value="3">
+                                        <div id="r-error" class="error-message"></div>
+                                    </div>
+                                    <input type="submit" value="Проверить">
+                                </form>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+            <!-- Колонка с таблицей результатов -->
+            <td style="width: 50%;">
+                <div id="results-container">
+                    <h2>Таблица результатов</h2>
+                    <table id="res-table">
+                        <thead>
+                        <tr>
+                            <th>Результат</th>
+                            <th>X</th>
+                            <th>Y</th>
+                            <th>R</th>
+                            <th>Время</th>
+                            <th>Время работы</th>
+                        </tr>
+                        </thead>
+                        <tbody id="ResBody">
+
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script>
+    function populateTable(dataArray) {
+
+        const tableBody = document.getElementById('ResBody');
+
+
+        tableBody.innerHTML = '';
+
+        dataArray.forEach(item => {
+
+            const row = tableBody.insertRow();
+
+
+            const cellIsHit = row.insertCell(0);
+            const cellX = row.insertCell(1);
+            const cellY = row.insertCell(2);
+            const cellR = row.insertCell(3);
+            const cellCurTime = row.insertCell(4);
+            const cellWorkTime = row.insertCell(5);
+
+
+
+            cellIsHit.innerHTML = item.isHit ? 'Попадание' : 'Промах';
+            cellX.innerHTML = item.X;
+            cellY.innerHTML = item.Y;
+            cellR.innerHTML = item.R;
+            cellCurTime.innerHTML = item.OnTime;
+            cellWorkTime.innerHTML = item.WorkTime;
+        });
+    }
+
+
+
+    async function actualDataGet() {
+        try {
+
+            const response = await fetch('/Actual');
+
+
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+
+
+            const posts = await response.json();
+
+
+            console.log('Полученные посты:', posts);
+            populateTable(posts)
+
+
+        } catch (error) {
+            console.error('Не удалось получить посты:', error);
+        }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const canvas = document.getElementById('graph-canvas');
+        const ctx = canvas.getContext('2d');
+
+        const img1 = new Image();
+        img1.src = "/images/gol.jpg"
+        const img2 = new Image();
+        img2.src = "/images/ehh.jpg"
+
+        async function createPost(postData) {
+            try {
+                console.log(JSON.stringify(postData))
+                const response = await fetch('/fire', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка HTTP: ${response.status}`);
+                }
+
+                const newPost = await response.json();
+                if(newPost.isHit) {
+                    actualDataGet()
+                    img1.onload = function() {
+
+                        console.log('Изображение успешно загружено!');
+
+                        ctx.drawImage(img1, 0, 0, 300, 300);
+                    };
+                    ctx.drawImage(img1, 0, 0, 300, 300);
+
+                }
+                else {
+                    actualDataGet()
+                    img2.onload = function() {
+
+                        console.log('Изображение успешно загружено!');
+
+                        ctx.drawImage(img2, 0, 0, 300, 300);
+                    };
+                    ctx.drawImage(img2, 0, 0, 300, 300);
+
+                }
+
+            } catch (error) {
+                console.error('Ошибка при создании поста:', error);
+            }
+        }
+
+
+        const form = document.getElementById('coordinates-form');
+        const xInput = document.getElementById('x-select');
+        const yInput = document.getElementById('y-text');
+        const yError = document.getElementById('y-error');
+        const rButtons = document.querySelectorAll('.r-buttons input[type="button"]');
+        const rHiddenInput = document.getElementById('r-hidden');
+        const rError = document.getElementById('r-error');
+
+        let selectedR = 3;
+
+        actualDataGet();
+
+
+        function drawGraph(R) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const center = width / 2;
+            const scale = center * 0.8 / 5;
+            const r_pixels = R * scale;
+
+
+            ctx.clearRect(0, 0, width, height);
+
+
+            ctx.fillStyle = 'rgba(54, 162, 235, 0.6)';
+            ctx.strokeStyle = 'rgba(54, 162, 235, 1)';
+            ctx.lineWidth = 2;
+
+
+            ctx.beginPath();
+            ctx.moveTo(center, center);
+            ctx.arc(center, center, r_pixels, Math.PI, 1.5 * Math.PI);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+
+            ctx.beginPath();
+            ctx.rect(center - r_pixels, center, r_pixels, r_pixels / 2);
+            ctx.fill();
+            ctx.stroke();
+
+
+            ctx.beginPath();
+            ctx.moveTo(center, center);
+            ctx.lineTo(center + r_pixels, center);
+            ctx.lineTo(center, center + r_pixels);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+
+            ctx.strokeStyle = '#333';
+            ctx.fillStyle = '#333';
+            ctx.lineWidth = 1;
+
+
+            ctx.beginPath();
+            ctx.moveTo(0, center);
+            ctx.lineTo(width, center);
+            ctx.lineTo(width - 10, center - 5);
+            ctx.moveTo(width, center);
+            ctx.lineTo(width - 10, center + 5);
+            ctx.stroke();
+            ctx.fillText('x', width - 15, center - 10);
+
+
+            ctx.beginPath();
+            ctx.moveTo(center, height);
+            ctx.lineTo(center, 0);
+            ctx.lineTo(center - 5, 10);
+            ctx.moveTo(center, 0);
+            ctx.lineTo(center + 5, 10);
+            ctx.stroke();
+            ctx.fillText('y', center + 10, 15);
+
+
+            const labels = ['-R', '-R/2', 'R/2', 'R'];
+            const positions = [-r_pixels, -r_pixels / 2, r_pixels / 2, r_pixels];
+
+            ctx.font = '12px Segoe UI';
+            labels.forEach((label, i) => {
+                const pos = positions[i];
+
+                ctx.beginPath();
+                ctx.moveTo(center + pos, center - 5);
+                ctx.lineTo(center + pos, center + 5);
+                ctx.stroke();
+                ctx.fillText(label, center + pos - 10, center + 20);
+
+
+                ctx.beginPath();
+                ctx.moveTo(center - 5, center - pos);
+                ctx.lineTo(center + 5, center - pos);
+                ctx.stroke();
+                ctx.fillText(label, center + 10, center - pos + 5);
+            });
+        }
+
+
+        rButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                rButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                selectedR = this.value;
+                rHiddenInput.value = selectedR;
+                rError.textContent = '';
+                drawGraph(selectedR);
+            });
+        });
+
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+            yError.textContent = '';
+            rError.textContent = '';
+
+            const yValue = yInput.value.trim().replace(',', '.');
+            if (yValue === '') {
+                yError.textContent = 'Поле Y не может быть пустым.';
+                isValid = false;
+            } else if (isNaN(yValue)) {
+                yError.textContent = 'Значение Y должно быть числом.';
+                isValid = false;
+            } else {
+                const yNum = parseFloat(yValue);
+                if (yNum <= -3 || yNum >= 5) {
+                    yError.textContent = 'Y должен быть в диапазоне (-3 ... 5).';
+                    isValid = false;
+                }
+            }
+
+
+            if (!selectedR) {
+                rError.textContent = 'Необходимо выбрать значение R.';
+                isValid = false;
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+            }
+            else {
+                const newData = {
+                    X: xInput.value ,
+                    Y: parseFloat(yValue) ,
+                    R: selectedR
+                }
+                createPost(newData)
+                event.preventDefault();
+
+            }
+        });
+
+        drawGraph(selectedR);
+    });
+</script>
+
+</body>
+</html>
