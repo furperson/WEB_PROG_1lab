@@ -14,27 +14,12 @@ import java.io.InputStream
 import scala.collection.mutable.ArrayBuffer
 
 
-case class MyRecord(isHit: Boolean ,X: Int, Y:Float,R:Int,OnTime:String ,WorkTime:Long )
 
-object MyRecord {
-  implicit val decoder: JsonDecoder[MyRecord] = DeriveJsonDecoder.gen[MyRecord]
-  implicit val encoder: JsonEncoder[MyRecord] =
-    DeriveJsonEncoder.gen[MyRecord]
-}
 
-case class ReqRes(X: Int, Y:Float,R:Int)
-
-object ReqRes {
-  implicit val decoder: JsonDecoder[ReqRes] = DeriveJsonDecoder.gen[ReqRes]
-  implicit val encoder: JsonEncoder[ReqRes] =
-    DeriveJsonEncoder.gen[ReqRes]
-}
 
 object MainApp extends ZIOAppDefault {
 
-  val startTime = Unsafe.unsafe { implicit unsafe =>
-    runtime.unsafe.run(Clock.nanoTime).getOrThrow()
-  }
+
 
   val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
@@ -144,22 +129,42 @@ object MainApp extends ZIOAppDefault {
   val routes = Routes(
     Method.GET / "test" ->  testRes.toHandler,
     Method.GET / Root ->  mainRes.toHandler,
+    Method.GET / "clear" -> handler{
+      AppData.clear()
+      Response.json(AppData.toJson)
+    },
     Method.GET / "Actual" -> handler{
       println(AppData.toJson.toString)
       Response.json(AppData.toJson)
     },
-    Method.GET / "images" / "gol.jpg" -> image1Res.toHandler,
-    Method.GET / "images" / "ehh.jpg" -> image2Res.toHandler,
-    Method.GET / "fire" / jsn ->  Handler.fromFunctionHandler[(String, Request)]{case (data: String, request: Request) =>{
-  println(data)
-      val actData = data.replaceAll("%7B","{").replaceAll("%22","\"").replaceAll("%3A",":").replaceAll("%7D","}")
-      val res = actData.fromJson[ReqRes] match {
-      case Right(rs) => rs
-      case _ => {
-        println("ERRRO json")
-          ReqRes(0,0,1)
+    Method.GET / "images" / jsn -> Handler.fromFunctionHandler[(String, Request)]{ case (data: String, request: Request) =>{
+      data match {
+        case "gol.jpg" => image1Res.toHandler
+        case "ehh.jpg" =>  image2Res.toHandler
+        case _ => Response.text("404").toHandler
       }
     }
+    } ,
+    Method.GET / "fire"  ->  Handler.fromFunctionHandler[( Request)]{case ( request: Request) =>{
+      val startTime = Unsafe.unsafe { implicit unsafe =>
+        runtime.unsafe.run(Clock.nanoTime).getOrThrow()
+      }
+      println(Request)
+      //val actData = data.replaceAll("%7B","{").replaceAll("%22","\"").replaceAll("%3A",":").replaceAll("%7D","}")
+      val actX = request.queryParam("X") match {
+        case Some(s) => s
+        case _ => "0"
+      }
+      val actY = request.queryParam("Y") match {
+        case Some(s) => s
+        case _ => "0"
+      }
+      val actR = request.queryParam("R") match {
+        case Some(s) => s
+        case _ => "0"
+      }
+
+      val res = ReqRes(actX.toInt,actY.toFloat,actR.toInt)
       val endTime = Unsafe.unsafe { implicit unsafe =>
         runtime.unsafe.run(Clock.nanoTime).getOrThrow()
       }
@@ -168,7 +173,7 @@ object MainApp extends ZIOAppDefault {
 
 
 
-        val resp = MyRecord(checkInside(res),res.X,res.Y, res.R,formattedOnTime,workDuration.toSeconds )
+        val resp = MyRecord(checkInside(res),res.X,res.Y, res.R,formattedOnTime,workDuration.toNanos )
         AppData+= resp
         Response.json(resp.toJson.toString).toHandler
     }

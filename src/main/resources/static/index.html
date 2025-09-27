@@ -49,9 +49,25 @@
             border-spacing: 25px 0;
         }
 
+
+
         #main-table > tbody > tr > td {
             vertical-align: top;
         }
+
+
+        #y-text::placeholder {
+            color: #99a2ad;
+            opacity: 1;
+            font-style: italic;
+            transition: color 0.3s;
+        }
+
+
+        #y-text:focus::placeholder {
+            color: #ced4da; /
+        }
+
 
 
         #input-table-container {
@@ -257,6 +273,7 @@
                                         <div id="r-error" class="error-message"></div>
                                     </div>
                                     <input type="submit" value="Проверить">
+                                    <input type="button" id="clearB" value="очистить">
                                 </form>
                             </td>
                         </tr>
@@ -275,7 +292,7 @@
                             <th>Y</th>
                             <th>R</th>
                             <th>Время</th>
-                            <th>Время работы</th>
+                            <th>Время работы (наносек)</th>
                         </tr>
                         </thead>
                         <tbody id="ResBody">
@@ -344,6 +361,37 @@
         }
     }
 
+    document.getElementById("clearB").addEventListener("click", function () {
+
+    });
+
+    async function clearDataGet() {
+        try {
+
+            const response = await fetch('/clear');
+
+
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+
+
+            const posts = await response.json();
+
+
+            console.log('Полученные посты:', posts);
+            populateTable(posts)
+
+
+        } catch (error) {
+            console.error('Не удалось получить посты:', error);
+        }
+    }
+
+    document.getElementById("clearB").addEventListener("click", function () {
+        clearDataGet()
+    });
+
 
     document.addEventListener('DOMContentLoaded', function() {
         const canvas = document.getElementById('graph-canvas');
@@ -356,9 +404,14 @@
 
         async function createPost(postData) {
             try {
+                const params = new URLSearchParams(postData);
                 console.log(JSON.stringify(postData))
-                console.log(`/fire/${JSON.stringify(postData)}`)
-                const response = await fetch(`/fire/${JSON.stringify(postData)}`, {
+
+                let url = new URL ("/fire", window.location.origin);
+                url.search = params.toString()
+
+
+                const response = await fetch(url, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
