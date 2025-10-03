@@ -273,14 +273,14 @@
                                         <div id="r-error" class="error-message"></div>
                                     </div>
                                     <input type="submit" value="Проверить">
-                                    <input type="button" id="clearB" value="очистить">
+                                    <input type="button" id="clear-button" value="очистить">
                                 </form>
                             </td>
                         </tr>
                     </table>
                 </div>
             </td>
-            <!-- Колонка с таблицей результатов -->
+
             <td style="width: 50%;">
                 <div id="results-container">
                     <h2>Таблица результатов</h2>
@@ -295,7 +295,7 @@
                             <th>Время работы (наносек)</th>
                         </tr>
                         </thead>
-                        <tbody id="ResBody">
+                        <tbody id="res-body">
 
                         </tbody>
                     </table>
@@ -308,14 +308,14 @@
 <script>
     function populateTable(dataArray) {
 
-        const tableBody = document.getElementById('ResBody');
+        const resTableBody = document.getElementById('res-body');
 
 
-        tableBody.innerHTML = '';
+        resTableBody.innerHTML = '';
 
         dataArray.forEach(item => {
 
-            const row = tableBody.insertRow();
+            const row = resTableBody.insertRow();
 
 
             const cellIsHit = row.insertCell(0);
@@ -352,18 +352,14 @@
             const posts = await response.json();
 
 
-            console.log('Полученные посты:', posts);
+            console.log('Полученные данные ::', posts);
             populateTable(posts)
 
 
         } catch (error) {
-            console.error('Не удалось получить посты:', error);
+            console.error('Не удалось получить данные:', error);
         }
     }
-
-    document.getElementById("clearB").addEventListener("click", function () {
-
-    });
 
     async function clearDataGet() {
         try {
@@ -388,10 +384,9 @@
         }
     }
 
-    document.getElementById("clearB").addEventListener("click", function () {
+    document.getElementById("clear-button").addEventListener("click", function () {
         clearDataGet()
     });
-
 
     document.addEventListener('DOMContentLoaded', function() {
         const canvas = document.getElementById('graph-canvas');
@@ -447,7 +442,7 @@
                 }
 
             } catch (error) {
-                console.error('Ошибка при создании поста:', error);
+                console.error('Ошибка:', error);
             }
         }
 
@@ -459,6 +454,17 @@
         const rButtons = document.querySelectorAll('.r-buttons input[type="button"]');
         const rHiddenInput = document.getElementById('r-hidden');
         const rError = document.getElementById('r-error');
+
+        let lastValidValue = '';
+
+        yInput.addEventListener('input', function() {
+            const currentValue = this.value;
+            if (isNaN(Number(currentValue)) && currentValue !== '' && currentValue !== '-') {
+                this.value = lastValidValue;
+            } else {
+                lastValidValue = currentValue;
+            }
+        });
 
         let selectedR = 3;
 
