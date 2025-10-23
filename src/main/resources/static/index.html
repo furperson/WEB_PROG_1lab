@@ -229,6 +229,9 @@
         <tr>
             <td style="width: 50%;">
                 <div id="input-table-container">
+                    <div>
+                        <input type="button" id="connect-ble-button" value="ПОДКЛЮЧИТЬ BLE ДИСПЛЕЙ">
+                    </div>
                     <div id="header">
                         <div>ФИО: Сыщиков Никита Сергеевич</div>
                         <div>Группа: P3231</div>
@@ -306,6 +309,11 @@
 </div>
 
 <script>
+    const SERVICE_UUID = '9a8ca9ef-e43f-4157-9fee-c37a3d7dc12d';
+    const CHARACTERISTIC_UUID = 'c8f25217-425a-4285-8e75-6d92ce9f656a';
+
+    let fireCharact;
+
     function populateTable(dataArray) {
 
         const resTableBody = document.getElementById('res-body');
@@ -336,7 +344,87 @@
         });
     }
 
+    // Подключение ble устройства и сохранение его id
+    async function connect(){
+        try {
+            const device = await navigator.bluetooth.requestDevice({
+                filters: [{ services: [SERVICE_UUID] }]
+            });
 
+            localStorage.setItem('bleDeviceId', device.id);
+
+
+            const server = await device.gatt.connect();
+            console.log('Устройство подключено!');
+
+            console.log('Получение сервиса ');
+            const service = await server.getPrimaryService(SERVICE_UUID);
+
+
+            console.log('Получение характеристики ');
+            fireCharact = await service.getCharacteristic(CHARACTERISTIC_UUID);
+
+
+        } catch (error) {
+            console.error('Ошибка:', error);
+        }
+    }
+
+    // если ранее подключалось устройство - его подключение , иначе  ничего не делает
+    async function reconnect() {
+        try {
+            const deviceId = localStorage.getItem('bleDeviceId');
+            if (!deviceId) {
+                console.log('Нет сохраненных устройств');
+                return;
+            }
+
+            const permittedDevices = await navigator.bluetooth.getDevices();
+
+            const device = permittedDevices.find(d => d.id === deviceId);
+
+            if (!device) {
+                console.log('Ранее разрешенное устройство не найдено');
+                return;
+            }
+
+            const server = await device.gatt.connect();
+            console.log('Устройство переподключено!');
+
+            console.log('Получение сервиса ');
+            const service = await server.getPrimaryService(SERVICE_UUID);
+
+
+            console.log('Получение характеристики ');
+            fireCharact = await service.getCharacteristic(CHARACTERISTIC_UUID);
+
+        } catch (error) {
+            console.error('Ошибка:', error);
+        }
+    }
+
+    // Отправка данных на дисплей
+    async function fireDisplay(text) {
+        if (!fireCharact) {
+            console.error('Характеристика не найдена. Сначала подключитесь.');
+            return;
+        }
+
+        try {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
+
+            console.log(`Отправка данных: ${text}`);
+            await fireCharact.writeValueWithResponse(data);
+
+            console.log('Данные успешно отправлены ');
+
+        } catch (error) {
+            console.error('Ошибка при записи в характеристику:', error);
+        }
+    }
+
+    window.onload = reconnect;
 
     async function actualDataGet() {
         try {
@@ -388,6 +476,8 @@
         clearDataGet()
     });
 
+    document.getElementById("connect-ble-button").addEventListener("click",connect)
+
     document.addEventListener('DOMContentLoaded', function() {
         const canvas = document.getElementById('graph-canvas');
         const ctx = canvas.getContext('2d');
@@ -420,24 +510,18 @@
                 const newPost = await response.json();
                 console.log(newPost)
                 if(newPost.isHit) {
+                    //Отправка сообщения на ble устройство
+                    fireDisplay('yes')
                     actualDataGet()
-                    img1.onload = function() {
 
-                        console.log('Изображение успешно загружено!');
-
-                        ctx.drawImage(img1, 0, 0, 300, 300);
-                    };
                     ctx.drawImage(img1, 0, 0, 300, 300);
 
                 }
                 else {
+                    //Отправка сообщения на ble устройство
+                    fireDisplay('no')
                     actualDataGet()
-                    img2.onload = function() {
 
-                        console.log('Изображение успешно загружено!');
-
-                        ctx.drawImage(img2, 0, 0, 300, 300);
-                    };
                     ctx.drawImage(img2, 0, 0, 300, 300);
 
                 }
